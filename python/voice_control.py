@@ -1,41 +1,64 @@
-// Pin definitions for motor driver
-const int motorFI = 9;   // Forward input (PWM speed control)
-const int motorBI = 10;  // Backward input (kept LOW since we only spin one direction)
+"""
+Voice-controlled fan using Python, Vosk speech recognition, and Arduino.
+Listens for voice commands ("fan on", "fan off") and sends serial commands to Arduino.
+"""
 
-void setup() {
-  // Configure motor control pins as outputs
-  pinMode(motorFI, OUTPUT);
-  pinMode(motorBI, OUTPUT);
+import serial        # Serial communication with Arduino
+import time          # Used for delay to allow Arduino to initialize
+import sounddevice as sd  # Microphone audio input
+import vosk          # Offline speech recognition engine
+import queue         # Thread-safe queue for audio data
+import json          # Parsing Vosk recognition results
 
-  // Ensure backward pin is always LOW (no reverse rotation)
-  digitalWrite(motorBI, LOW);
+# ---------- Arduino Serial Connection ----------
+# NOTE: Change this port to match your Arduino device
+arduino = serial.Serial('/dev/cu.usbmodemF0F5BD56516C2', 9600)
+time.sleep(2)  # Wait for Arduino to reset and be ready
 
-  // Start serial communication with Python (baud rate: 9600)
-  Serial.begin(9600);
+# ---------- Speech Recognition Setup ----------
+model = vosk.Model("model")  # Load offline speech recognition model
+samplerate = 16000           # Sample rate required by Vosk
+q = queue.Queue()            # Queue to store incoming audio data
 
-  // Motor starts in OFF state
-  analogWrite(motorFI, 0);
-}
+def callback(indata, frames, time, status):
+    """
+    This function is called automatically by sounddevice
+    whenever new audio data is captured from the microphone.
+    """
+    if status:
+        print(status)  # Print any audio stream errors or warnings
+    
+    # Convert audio data to bytes and store it in the queue
+    q.put(bytes(indata))
 
-void loop() {
-  // Check if data is available from Python
-  if (Serial.available() > 0) {
+# ---------- Microphone Audio Stream ----------
+with sd.RawInputStream(
+    samplerate=samplerate,
+    blocksize=8000,
+    dtype='int16',
+    channels=1,
+    callback=callback
+):
+    # Initialize the speech recognizer
+    rec = vosk.KaldiRecognizer(model, samplerate)
+    print("Say 'Fan On' or 'Fan Off'...")
 
-    // Read command sent over serial until newline character
-    String command = Serial.readStringUntil('\n');
-    command.trim();  // Remove whitespace/newline characters
+    # Main loop: continuously process audio and detect commands
+    while True:
+        data = q.get()  # Get audio data from the queue
 
-    // Turn fan ON at full speed
-    if (command == "FAN_ON") {
-      analogWrite(motorFI, 255);  // Max PWM value = full speed
-      Serial.println("Motor ON");
-    }
+        # Check if a complete phrase has been recognized
+        if rec.AcceptWaveform(data):
+            result = json.loads(rec.Result())  # Convert recognition result to JSON
+            text = result.get("text", "")      # Extract recognized text
+            print("You said:", text)
 
-    // Turn fan OFF
-    else if (command == "FAN_OFF") {
-      analogWrite(motorFI, 0);    // PWM = 0 stops motor
-      Serial.println("Motor OFF");
-    }
-  }
-}
+            # ---------- Voice Command Handling ----------
+            if "fan on" in text:
+                arduino.write(b"FAN_ON\n")  # Send command to Arduino
+                print("Motor ON command sent")
+
+            elif "fan off" in text:
+                arduino.write(b"FAN_OFF\n")  # Send command to Arduino
+                print("Motor OFF command sent")
 
