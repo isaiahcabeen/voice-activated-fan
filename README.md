@@ -14,6 +14,9 @@ By saying “fan on” or “fan off”, a Python program recognizes speech and 
 4. Arduino turns the motor on or off.
 
 
+<img width="1304" height="1160" alt="image" src="https://github.com/user-attachments/assets/b66b5141-ba8a-4486-a26e-e8ada01bb173" />
+
+
 ⚙️ Hardware Required
 
 Arduino UNO R4 Wifi
