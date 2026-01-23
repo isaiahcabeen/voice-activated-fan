@@ -16,11 +16,13 @@ Jumper wires
 Power Supply Module
 USB-c cable
 
-🔌 Wiring Diagram
-(Add images here — I’ll show you how in a second)
 
 💻 Software Requirements (Mac)
+
 Python libraries (in terminal): pip install pyserial sounddevice vosk
+
 New-ish version of Python - https://www.python.org/ftp/python/3.14.2/python-3.14.2-macos11.pkg
+
 Arduino IDE (use ai to figure out which download link you need)- https://www.arduino.cc/en/software/
+
 Vosk speech model - https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
