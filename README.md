@@ -1,19 +1,31 @@
 🎤 Voice-Activated Fan
+
 This project allows you to control a fan using voice commands.
 By saying “fan on” or “fan off”, a Python program recognizes speech and sends commands to an Arduino, which controls a motor.
 
 🧠 How It Works (Simple Explanation)
-Python listens to your microphone (through the Mac microphone)
-Vosk converts your voice into text.
-If the text matches a command, Python sends a signal to Arduino.
-Arduino turns the motor on or off.
+
+1. Python listens to your microphone (through the Mac microphone)
+
+2. Vosk converts your voice into text
+
+3. If the text matches a command, Python sends a signal to Arduino.
+
+4. Arduino turns the motor on or off.
+
 
 ⚙️ Hardware Required
+
 Arduino UNO R4 Wifi
+
 DC motor 
+
 TA6586 - Motor Driver Chip
+
 Jumper wires
+
 Power Supply Module
+
 USB-c cable
 
 
